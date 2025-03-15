@@ -1,98 +1,82 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // your code here
-});
+  const taskForm = document.getElementById("create-task-form");
+  const taskInput = document.getElementById("new-task-description");
+  const taskList = document.getElementById("tasks");
+  const dueDateInput = document.getElementById("due-date");
+  const userInput = document.getElementById("user");
+  const priorityDropdown = document.getElementById("task-priority");
 
-// Select form and task list
-const taskForm = document.getElementById("create-task-form");
-const taskInput = document.getElementById("new-task-description");
-const taskList = document.createElement("ul");
-document.body.appendChild(taskList);
+  if (!taskForm || !taskInput || !taskList || !priorityDropdown) {
+    console.error("One or more elements are missing from the DOM.");
+    return;
+  }
 
-//Additional input fields
-const dueDateInput = document.createElement("input");
-dueDateInput.type = "date";
-dueDateInput.id = "due-date";
-taskForm.appendChild(dueDateInput);
-
-const userInput = document.createElement("input");
-userInput.type = "text";
-userInput.id = "user";
-userInput.placeholder = "Assigned To";
-taskForm.appendChild(userInput);
-
-//Select priority dropdown from HTMl
-const priorityDropdown = document.getElementById("priority");
-
-// Listen for form submission
   taskForm.addEventListener("submit", (event) => {
-    event.preventDefault(); // Prevent page reload
+    event.preventDefault(); // Prevents page refresh
 
-    const taskText = taskInput.value.trim(); // Get input value
+    // Get user input values
+    const taskText = taskInput.value.trim();
     const dueDate = dueDateInput.value;
-    const assignUser = userInput.value.trim()
-    const priority = priorityselect.value;
+    const assignedUser = userInput.value.trim();
+    const priority = priorityDropdown.value;
 
-    if (taskText === "") return; // Ignore empty tasks
-
-
-    // Create a new list item
-    const taskItem = document.createElement("li");
-    taskItem.textContent = taskText;
-
-    // Append task to list
-    taskList.appendChild(taskItem);
-
-    // Clear input field after submission
-    taskInput.value = "";
-  });
-
-  //set priority color
-  if (priority === "High") {
-    taskItem.style.color = "red";
-  }
-  else if (priority === "Medium") {
-    taskItem.style.color = "yellow";
-  }
-  else if (priority === "Low") {
-    taskItem.style.color = "green";
-  }
-  else {
-    taskItem.style.color = "black";
-  }
-
-  //append task to list
-  taskList.appendChild(taskItem);
-
-  //Delete button
-  taskItem.querySelector("edit-btn").addEventListener("click", () => {
-    const newtext = prompt("Edit Task", taskItem.textContent);
-    if (newText) taskitem.querySelector("strong").textContent = newText;
-  });
-
-  // clears input fields after subssion
-  taskInput.value = "";
-  dueDateInput.value = "";
-  userInput.value = "";
-  priorityDropdown.value = "Low";
-
-  //sorting functions
-  const sortButton = document.getElementById("sort-button");
-  sortButton.textContent = "Sort by Due Date";
-  document.body.insertBefore(sortButton, taskList);
-
-  sortButton.addEventListener("click", () => {
-    const taskArray = Array.from(taskList.children);
-    taskArray.sort((a, b) => {
-      const priorityOrder = {
-        High: 3,
-        Medium: 2,
-        Low: 1,
-      };
-      return priorityOrder[a.stylecolor] - priorityOrder[b.style.color];
+    if (taskText === "") {
+      alert("Task description cannot be empty!");
+      return;
     }
-    );
-    taskArray.forEach((task) => taskList.appendChild(task));
-  }
-  );  
 
-  
+    // Create new list item
+    const taskItem = document.createElement("li");
+    taskItem.setAttribute("data-priority", priority); // Store priority for sorting
+    taskItem.style.color = getPriorityColor(priority);
+    taskItem.innerHTML = `
+      ${taskText} - Due: ${dueDate || "N/A"} - Assigned to: ${assignedUser || "N/A"}
+      <button class="delete-btn">❌</button>
+      <button class="edit-btn">✏️</button>
+    `;
+
+    // Add event listener to delete button
+    taskItem.querySelector(".delete-btn").addEventListener("click", () => {
+      taskItem.remove();
+    });
+
+    // Add event listener to edit button
+    taskItem.querySelector(".edit-btn").addEventListener("click", () => {
+      const newTaskText = prompt("Edit Task", taskText);
+      if (newTaskText !== null && newTaskText.trim() !== "") {
+        taskItem.firstChild.textContent = `${newTaskText} - Due: ${dueDate || "N/A"} - Assigned to: ${assignedUser || "N/A"}`;
+      }
+    });
+
+    taskList.appendChild(taskItem);
+    sortTasks(); // Ensure sorting is maintained
+
+    // Clear input fields
+    taskInput.value = "";
+    dueDateInput.value = "";
+    userInput.value = "";
+    priorityDropdown.value = "low";
+  });
+
+  // Function to get color based on priority
+  function getPriorityColor(priority) {
+    switch (priority) {
+      case "high": return "red";
+      case "medium": return "orange";
+      case "low": return "green";
+      default: return "black";
+    }
+  }
+
+  // Function to sort tasks by priority
+  function sortTasks() {
+    let tasksArray = Array.from(taskList.children);
+    tasksArray.sort((a, b) => {
+      const priorityOrder = { high: 3, medium: 2, low: 1 };
+      return priorityOrder[b.getAttribute("data-priority")] - priorityOrder[a.getAttribute("data-priority")];
+    });
+
+    taskList.innerHTML = ""; // Clear the list
+    tasksArray.forEach(task => taskList.appendChild(task)); // Re-add sorted tasks
+  }
+});
