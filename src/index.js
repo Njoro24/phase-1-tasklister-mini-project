@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     taskItem.style.color = getPriorityColor(priority);
     taskItem.innerHTML = `
       ${taskText} - Due: ${dueDate || "N/A"} - Assigned to: ${assignedUser || "N/A"}
-      <button class="delete-btn">❌</button>
+      <button class="delete-btn">🚮</button>
       <button class="edit-btn">✏️</button>
     `;
 
